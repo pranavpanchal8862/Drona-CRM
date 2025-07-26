@@ -23,6 +23,7 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [highlightTerm, setHighlightTerm] = useState('');
 
   // Search data for navigation
   const searchableItems = [
@@ -41,6 +42,35 @@ function App() {
     { id: 'reports', title: 'Reports', description: 'Generate business reports', keywords: ['export', 'pdf', 'analysis', 'summary', 'data export'] }
   ];
 
+  // Extended search data including content from different sections
+  const extendedSearchData = [
+    // Dashboard items
+    { id: 'dashboard', section: 'Dashboard', title: 'Active Cases', description: '24 active cases currently in progress', keywords: ['active', 'cases', 'progress'] },
+    { id: 'dashboard', section: 'Dashboard', title: 'Course Enrollments', description: '156 students enrolled in courses', keywords: ['enrollments', 'students', 'courses'] },
+    { id: 'dashboard', section: 'Dashboard', title: 'Monthly Revenue', description: '$45,230 revenue this month', keywords: ['revenue', 'monthly', 'income'] },
+    
+    // Cases items
+    { id: 'cases', section: 'Cases', title: 'Mobile Analysis', description: 'Mobile device forensic investigations', keywords: ['mobile', 'device', 'forensics', 'phone'] },
+    { id: 'cases', section: 'Cases', title: 'Cyber Fraud', description: 'Digital fraud investigations', keywords: ['fraud', 'cyber', 'digital', 'scam'] },
+    { id: 'cases', section: 'Cases', title: 'Computer Forensics', description: 'Computer and laptop investigations', keywords: ['computer', 'laptop', 'desktop', 'pc'] },
+    { id: 'cases', section: 'Cases', title: 'Content Removal', description: 'Remove unwanted digital content', keywords: ['content', 'removal', 'delete', 'takedown'] },
+    
+    // Courses items
+    { id: 'courses', section: 'Courses', title: 'SOC Analyst', description: 'Security Operations Center training', keywords: ['soc', 'security', 'operations', 'analyst'] },
+    { id: 'courses', section: 'Courses', title: 'CEH Certification', description: 'Certified Ethical Hacker course', keywords: ['ceh', 'ethical', 'hacker', 'certification'] },
+    
+    // Contacts items
+    { id: 'contacts', section: 'Contacts', title: 'Clients', description: 'Manage client information', keywords: ['clients', 'customers', 'business'] },
+    { id: 'contacts', section: 'Contacts', title: 'Students', description: 'Course student directory', keywords: ['students', 'learners', 'trainees'] },
+    
+    // Documents items
+    { id: 'documents', section: 'Documents', title: 'Case Files', description: 'Investigation case documents', keywords: ['case', 'files', 'investigation'] },
+    { id: 'documents', section: 'Documents', title: 'Evidence', description: 'Digital evidence storage', keywords: ['evidence', 'proof', 'digital'] },
+    { id: 'documents', section: 'Documents', title: 'Reports', description: 'Investigation reports and findings', keywords: ['reports', 'findings', 'results'] },
+    
+    // Add more searchable content as needed
+    ...searchableItems
+  ];
   const notifications = [
     { id: 1, title: 'New case assigned', message: 'Case C001 has been assigned to you', time: '5 min ago', unread: true },
     { id: 2, title: 'Course enrollment', message: 'New student enrolled in SOC course', time: '1 hour ago', unread: true },
@@ -48,18 +78,33 @@ function App() {
   ];
 
   // Filter search results
-  const searchResults = searchQuery.trim() 
-    ? searchableItems.filter(item => 
+  const searchResults = searchQuery.trim()
+    ? extendedSearchData.filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase()))
-      ).slice(0, 6) // Limit to 6 results
+        (item.keywords && item.keywords.some(keyword => keyword.toLowerCase().includes(searchQuery.toLowerCase())))
+      ).slice(0, 8) // Limit to 8 results
     : [];
 
+  // Group search results by section
+  const groupedSearchResults = searchResults.reduce((acc, item) => {
+    const section = item.section || item.title;
+    if (!acc[section]) {
+      acc[section] = [];
+    }
+    acc[section].push(item);
+    return acc;
+  }, {} as Record<string, typeof searchResults>);
   const handleSearchSelect = (itemId: string) => {
     setActiveTab(itemId);
+    setHighlightTerm(searchQuery);
     setSearchQuery('');
     setShowSearchResults(false);
+    
+    // Clear highlight after 3 seconds
+    setTimeout(() => {
+      setHighlightTerm('');
+    }, 3000);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,36 +113,52 @@ function App() {
     setShowSearchResults(value.trim().length > 0);
   };
 
+  const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm.trim()) return text;
+    
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <mark key={index} className="bg-yellow-200 text-yellow-900 px-1 rounded">
+          {part}
+        </mark>
+      ) : part
+    );
+  };
   const renderContent = () => {
+    const componentProps = { highlightTerm, highlightText };
+    
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard {...componentProps} />;
       case 'cases':
-        return <Cases />;
+        return <Cases {...componentProps} />;
       case 'courses':
-        return <Courses />;
+        return <Courses {...componentProps} />;
       case 'sales':
-        return <SalesFunnel />;
+        return <SalesFunnel {...componentProps} />;
       case 'analytics':
-        return <Analytics />;
+        return <Analytics {...componentProps} />;
       case 'contacts':
-        return <Contacts />;
+        return <Contacts {...componentProps} />;
       case 'documents':
-        return <Documents />;
+        return <Documents {...componentProps} />;
       case 'marketing':
-        return <Marketing />;
+        return <Marketing {...componentProps} />;
       case 'incident-response':
-        return <IncidentResponse />;
+        return <IncidentResponse {...componentProps} />;
       case 'communications':
-        return <Communications />;
+        return <Communications {...componentProps} />;
       case 'knowledge-base':
-        return <KnowledgeBase />;
+        return <KnowledgeBase {...componentProps} />;
       case 'audit-logs':
-        return <AuditLogs />;
+        return <AuditLogs {...componentProps} />;
       case 'reports':
-        return <Reports />;
+        return <Reports {...componentProps} />;
       default:
-        return <Dashboard />;
+        return <Dashboard {...componentProps} />;
     }
   };
 
@@ -134,26 +195,41 @@ function App() {
                 
                 {/* Search Results Dropdown */}
                 {showSearchResults && searchResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 max-h-80 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50 max-h-96 overflow-y-auto">
                     <div className="px-3 py-2 text-xs font-medium text-slate-500 uppercase tracking-wide border-b border-slate-200">
                       Search Results ({searchResults.length})
                     </div>
-                    {searchResults.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => handleSearchSelect(item.id)}
-                        className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center justify-between group transition-colors"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium text-slate-900 group-hover:text-cyan-600 transition-colors">
-                            {item.title}
+                    
+                    {Object.entries(groupedSearchResults).map(([section, items]) => (
+                      <div key={section}>
+                        {Object.keys(groupedSearchResults).length > 1 && (
+                          <div className="px-3 py-2 text-xs font-medium text-slate-400 bg-slate-50 border-b border-slate-100">
+                            {section}
                           </div>
-                          <div className="text-sm text-slate-600 mt-1">
-                            {item.description}
-                          </div>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-600 transition-colors" />
-                      </button>
+                        )}
+                        {items.map((item, index) => (
+                          <button
+                            key={`${item.id}-${index}`}
+                            onClick={() => handleSearchSelect(item.id)}
+                            className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center justify-between group transition-colors border-b border-slate-50 last:border-b-0"
+                          >
+                            <div className="flex-1">
+                              <div className="font-medium text-slate-900 group-hover:text-cyan-600 transition-colors">
+                                {highlightText(item.title, searchQuery)}
+                              </div>
+                              <div className="text-sm text-slate-600 mt-1">
+                                {highlightText(item.description, searchQuery)}
+                              </div>
+                              {item.section && item.section !== item.title && (
+                                <div className="text-xs text-slate-400 mt-1">
+                                  in {item.section}
+                                </div>
+                              )}
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-600 transition-colors" />
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}
