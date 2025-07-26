@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { LayoutDashboard, FileText, GraduationCap, TrendingUp, BarChart3, Users, FileBarChart, FolderOpen, Megaphone, Shield as Shield2, MessageSquare, BookOpen, Activity, Shield } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,44 +24,16 @@ const menuItems = [
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, collapsed }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    // Lightning animation every 10 minutes (600,000 ms)
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      // Reset animation after 2 seconds
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 2000);
-    }, 600000); // 10 minutes
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className={`fixed left-0 top-0 h-full bg-slate-900 text-white shadow-2xl transition-all duration-300 z-50 ${collapsed ? 'w-16' : 'w-64'}`}>
       <div className={`p-6 border-b border-slate-700 ${collapsed ? 'px-4' : ''}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
-          <div className={`p-2 bg-cyan-600 rounded-lg relative overflow-hidden transition-all duration-300 ${
-            isAnimating ? 'animate-pulse shadow-lg shadow-cyan-400/50' : ''
-          }`}>
+          <div className="p-2 bg-cyan-600 rounded-lg">
             <Shield className="w-6 h-6" />
-            {/* Lightning effect overlay */}
-            {isAnimating && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-lightning-sweep"></div>
-                <div className="absolute inset-0 bg-cyan-300/20 animate-lightning-flash"></div>
-              </>
-            )}
           </div>
           {!collapsed && (
             <div>
-              <h1 className={`text-xl font-bold transition-all duration-300 ${
-                isAnimating ? 'text-cyan-300 drop-shadow-lg' : ''
-              }`}>
-                Dronashield
-              </h1>
+              <h1 className="text-xl font-bold">Dronashield</h1>
               <p className="text-slate-400 text-sm">Cyber Forensics CRM</p>
             </div>
           )}
