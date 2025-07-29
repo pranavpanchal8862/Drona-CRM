@@ -14,6 +14,7 @@ import Communications from './components/Communications';
 import KnowledgeBase from './components/KnowledgeBase';
 import AuditLogs from './components/AuditLogs';
 import Reports from './components/Reports';
+import Settings from './components/Settings';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -157,6 +158,8 @@ function App() {
         return <AuditLogs {...componentProps} />;
       case 'reports':
         return <Reports {...componentProps} />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Dashboard {...componentProps} />;
     }
@@ -250,7 +253,10 @@ function App() {
             {/* Right side - Settings, Notifications, Profile */}
             <div className="flex items-center space-x-3">
               {/* Settings */}
-              <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <button 
+                onClick={() => setActiveTab('settings')}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
                 <Settings className="w-5 h-5 text-slate-600" />
               </button>
               
